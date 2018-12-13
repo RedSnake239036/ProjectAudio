@@ -48,29 +48,25 @@ class AudioPlayer(QMainWindow):
         self.Volume.setGeometry(350, 55, 30, 100)
         self.Volume.valueChanged[int].connect(self.changeVolume)
 
+        self.timer = QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.Timercheck)
+        self.timer.start()
+
         self.setGeometry(300, 300, 400, 300)
         self.setWindowTitle('Mediaplayer')
         self.player = QMediaPlayer()
         self.show()
 
+    def Timercheck(self):
+        self.setWindowTitle('Mediaaaa!')
 
     def showDialog(self):
         self.filename = QFileDialog.getOpenFileName(self, 'Open file', '/home')[0]
         file = QUrl.fromLocalFile(self.filename)
         content = QMediaContent(file)
         self.player.setMedia(content)
-        self.TimeLine.setMinimum(0)
-        self.TimeLine.setMaximum(self.player.duration())
-        self.TimeLine.valueChanged.connect(self.player.setPosition)
-        self.player.positionChanged.connect(self.TimeLine.setValue)
 
-        #app.exhjkec()
-
-    def ChangeTime(self):
-        #self.TimeLine.setMinimum(0)
-        #self.TimeLine.setMaximum(self.player.duration())
-        #self.TimeLine.valueChanged.connect(self.player.setPosition)
-        #self.player.positionChanged.connect(self.TimeLine.setValue)
 
     def changeVolume(self, value):
         self.player.setVolume(value)
