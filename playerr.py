@@ -64,7 +64,7 @@ class AudioPlayer(QMainWindow):
         self.TimeLine.valueChanged.connect(self.player.setPosition)
         self.player.positionChanged.connect(self.TimeLine.setValue)
 
-        #app.exec()
+        #app.exhjkec()
 
     def ChangeTime(self):
         #self.TimeLine.setMinimum(0)
