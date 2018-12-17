@@ -132,6 +132,6 @@ class MediaPlayer(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Form()
+    ex = MediaPlayer()
     ex.show()
     sys.exit(app.exec_())
