@@ -65,9 +65,11 @@ class MediaPlayer(QMainWindow):
         self.mainGridLayout.addWidget(self.Volume, 1, 2, 3, 1)
         self.Volume.valueChanged[int].connect(self.changeVolume)
 
-
         # Создаем QListWidget() в котором будут хранится имена фалов
         self.listbox = QListWidget()
+
+        #self.listbox.SelectedClicked().connect(self.StartPlaying())
+        self.listbox.clicked.connect(self.StartPlaying)
 
         # Добавляем наш листбокс в макет  addWidget(ОБЪЕКТ, СТРОКА, СТОЛБЕЦ,  в высоту, в ширину )
         self.mainGridLayout.addWidget(self.listbox, 0, 0, 1, 0)
@@ -76,6 +78,9 @@ class MediaPlayer(QMainWindow):
         self.playList = []
         # создаем экземпляр медиаплеера
         self.player = QMediaPlayer()
+
+
+
 
     #функционал таймера, кнопок и ползунков
     def addFile(self):
@@ -90,10 +95,10 @@ class MediaPlayer(QMainWindow):
         self.playList.append(plItem(fullFileName, shortFileName))
         # Добавляем в listbox только имя файла
         self.listbox.addItem(shortFileName)
-        file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
-        content = QMediaContent(file)
-        self.player.setVolume(100)
-        self.player.setMedia(content)
+        #file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+        #content = QMediaContent(file)
+        #self.player.setVolume(100)
+        #self.player.setMedia(content)
 
     def removeFile(self):
         # Если выделен элемент
@@ -128,6 +133,21 @@ class MediaPlayer(QMainWindow):
 
     def PlayMusic(self):
         self.player.play()
+
+    def StartPlaying(self, item):
+        print(item)
+        if self.listbox.selectedItems():
+            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+            content = QMediaContent(file)
+            self.player.setMedia(content)
+
+    def media_status_changed(self, status):
+        print(status)
+        if status == QMediaPlayer.EndOfMedia:
+            self.player.stop()
+            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row() + 1].fPath)
+            content = QMediaContent(file)
+            self.player.setMedia(content)
 
 
 if __name__ == '__main__':
