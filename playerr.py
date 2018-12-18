@@ -21,7 +21,7 @@ class MediaPlayer(QMainWindow):
 
     def initUI(self):
         self.setGeometry(300, 300, 400, 300)
-        self.setWindowTitle('TestApp')
+        self.setWindowTitle('MediaPlayer')
         # Создание центрального виджета и настройка лайоута
         self.centerWindow = QWidget()
         self.mainGridLayout = QGridLayout()
@@ -36,20 +36,41 @@ class MediaPlayer(QMainWindow):
         # Добавляем кнопки в макет addWidget(ОБЪЕКТ, СТРОКА, СТОЛБЕЦ)
         self.mainGridLayout.addWidget(self.addBtn, 1, 0)
         self.mainGridLayout.addWidget(self.removeBtn, 1, 1)
+        
+        # Кнопка prev
+        # Создаем кнопку
+        self.prevBtn = QPushButton('',self)
+        # создаем и добавляем иконку
+        prevIcon = QIcon()
+        prevIcon.addFile('prev.png') 
+        # Назначаем иконку кнопке
+        self.prevBtn.setIcon(prevIcon)
+        # Размещаем кнопку на макете (лайоуте)
+        self.mainGridLayout.addWidget(self.prevBtn, 3, 0)
+              
+        # Кнопка play
+        self.playBtn = QPushButton('', self)
+        playIcon = QIcon()
+        playIcon.addFile('play.png')
+        self.playBtn.setIcon(playIcon)
+        self.mainGridLayout.addWidget(self.playBtn, 3, 1)
+        self.playBtn.clicked.connect(self.PlayMusic)        
 
+        # Кнопка pause
         self.pause = QPushButton('', self)
         pauseIcon = QIcon()
         pauseIcon.addFile('pause.png')
         self.pause.setIcon(pauseIcon)
-        self.mainGridLayout.addWidget(self.pause, 3, 1)
+        self.mainGridLayout.addWidget(self.pause, 3, 2)
         self.pause.clicked.connect(self.PauseMusic)
-
-        self.play = QPushButton('', self)
-        playIcon = QIcon()
-        playIcon.addFile('play.png')
-        self.play.setIcon(playIcon)
-        self.mainGridLayout.addWidget(self.play, 3, 0)
-        self.play.clicked.connect(self.PlayMusic)
+        
+        # Кнопка next
+        self.nextBtn = QPushButton('',self)
+        nextIcon = QIcon()
+        nextIcon.addFile('next.png')
+        self.nextBtn.setIcon(nextIcon)
+        self.mainGridLayout.addWidget(self.nextBtn,         3, 3)
+        
         #создание и настройка таймера и слайдеров
         self.timer = QTimer()
         self.timer.setInterval(100)
@@ -57,28 +78,33 @@ class MediaPlayer(QMainWindow):
         self.timer.start()
 
         self.TimeLine = QSlider(Qt.Horizontal, self)
-        self.mainGridLayout.addWidget(self.TimeLine, 2, 0, 1, 2)
+        self.mainGridLayout.addWidget(self.TimeLine, 2, 0, 1, 4)
         self.TimeLine.sliderPressed.connect(self.TLPress)
         self.TimeLine.sliderReleased.connect(self.TLRelease)
+        
 
         self.Volume = QSlider(Qt.Vertical, self)
-        self.mainGridLayout.addWidget(self.Volume, 1, 2, 3, 1)
+        self.Volume.setValue(50)
+        self.mainGridLayout.addWidget(self.Volume, 1, 4, 3, 1)
         self.Volume.valueChanged[int].connect(self.changeVolume)
+
+        # создаем экземпляр медиаплеера
+        self.player = QMediaPlayer()
+        self.player.stateChanged.connect(self.media_status_changed)
 
         # Создаем QListWidget() в котором будут хранится имена фалов
         self.listbox = QListWidget()
 
-        #self.listbox.SelectedClicked().connect(self.StartPlaying())
-        self.listbox.clicked.connect(self.StartPlaying)
+        self.listbox.doubleClicked.connect(self.PlayMusic)
 
         # Добавляем наш листбокс в макет  addWidget(ОБЪЕКТ, СТРОКА, СТОЛБЕЦ,  в высоту, в ширину )
         self.mainGridLayout.addWidget(self.listbox, 0, 0, 1, 0)
 
         # Создаем список в котором будут хранится имена и пути файлов в список будем добавлять объекты типа plItem
         self.playList = []
-        # создаем экземпляр медиаплеера
-        self.player = QMediaPlayer()
 
+        # Признак зацикленности плейлиста
+        self.loop = False
 
 
 
@@ -132,22 +158,38 @@ class MediaPlayer(QMainWindow):
         self.player.pause()
 
     def PlayMusic(self):
-        self.player.play()
-
-    def StartPlaying(self, item):
-        print(item)
         if self.listbox.selectedItems():
             file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
             content = QMediaContent(file)
             self.player.setMedia(content)
-
-    def media_status_changed(self, status):
-        print(status)
-        if status == QMediaPlayer.EndOfMedia:
-            self.player.stop()
-            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row() + 1].fPath)
+            self.player.setVolume(self.Volume.value())
+            self.player.play()
+        elif self.listbox.__len__() > 0:
+            self.listbox.setCurrentRow(0)
+            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
             content = QMediaContent(file)
             self.player.setMedia(content)
+            self.player.setVolume(self.Volume.value())
+            self.player.play()
+
+
+    def media_status_changed(self, status):
+        if status == QMediaPlayer.StoppedState:
+            if (self.listbox.currentIndex().row() == self.listbox.__len__()-1) and self.loop:
+                self.listbox.setCurrentRow(0)
+                file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+                content = QMediaContent(file)
+                self.player.setMedia(content)
+                self.player.play()
+            elif self.listbox.currentIndex().row() < self.listbox.__len__()-1:
+                self.listbox.setCurrentRow(self.listbox.currentIndex().row()+1)
+                file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+                content = QMediaContent(file)
+                self.player.setMedia(content)
+                self.player.play()
+
+
+
 
 
 if __name__ == '__main__':
