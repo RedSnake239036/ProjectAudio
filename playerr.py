@@ -72,6 +72,7 @@ class MediaPlayer(QMainWindow):
         nextIcon.addFile('next.png')
         self.nextBtn.setIcon(nextIcon)
         self.mainGridLayout.addWidget(self.nextBtn,         3, 3)
+        self.nextBtn.clicked.connect(self.NextTrack)
         
         #создание и настройка таймера и слайдеров
         self.timer = QTimer()
@@ -107,6 +108,7 @@ class MediaPlayer(QMainWindow):
 
         # Признак зацикленности плейлиста
         self.loop = False
+        self.IgnoreStateChange = False
 
 
 
@@ -155,19 +157,27 @@ class MediaPlayer(QMainWindow):
 
     def PreviousTrack(self):
         if self.listbox.selectedItems() and (self.listbox.currentRow() != 0):
+            self.IgnoreStateChange = True
             self.listbox.setCurrentRow(self.listbox.currentIndex().row() - 1)
-            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
-            content = QMediaContent(file)
-            self.player.setMedia(content)
-            self.player.setVolume(self.Volume.value())
-            self.player.play()
+            self.PlayMusic()
+            self.IgnoreStateChange = False
         elif self.listbox.selectedItems() and (self.listbox.currentRow() == 0):
+            self.IgnoreStateChange = True
             self.listbox.setCurrentRow(self.listbox.__len__() - 1)
-            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
-            content = QMediaContent(file)
-            self.player.setMedia(content)
-            self.player.setVolume(self.Volume.value())
-            self.player.play()
+            self.PlayMusic()
+            self.IgnoreStateChange = False
+
+    def NextTrack(self):
+        if self.listbox.selectedItems() and (self.listbox.currentRow() != 0):
+            self.IgnoreStateChange = True
+            self.listbox.setCurrentRow(self.listbox.currentIndex().row() + 1)
+            self.PlayMusic()
+            self.IgnoreStateChange = False
+        elif self.listbox.selectedItems() and (self.listbox.currentRow() == 0):
+            self.IgnoreStateChange = True
+            self.listbox.setCurrentRow(self.listbox.__len__() + 1)
+            self.PlayMusic()
+            self.IgnoreStateChange = False
 
     def changeVolume(self, value):
         self.player.setVolume(value)
@@ -192,19 +202,20 @@ class MediaPlayer(QMainWindow):
 
 
     def media_status_changed(self, status):
-        if status == QMediaPlayer.StoppedState:
-            if (self.listbox.currentIndex().row() == self.listbox.__len__()-1) and self.loop:
-                self.listbox.setCurrentRow(0)
-                file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
-                content = QMediaContent(file)
-                self.player.setMedia(content)
-                self.player.play()
-            elif self.listbox.currentIndex().row() < self.listbox.__len__()-1:
-                self.listbox.setCurrentRow(self.listbox.currentIndex().row()+1)
-                file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
-                content = QMediaContent(file)
-                self.player.setMedia(content)
-                self.player.play()
+        if not self.IgnoreStateChange:
+            if status == QMediaPlayer.StoppedState:
+                if (self.listbox.currentIndex().row() == self.listbox.__len__()-1) and self.loop:
+                    self.listbox.setCurrentRow(0)
+                    file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+                    content = QMediaContent(file)
+                    self.player.setMedia(content)
+                    self.player.play()
+                elif self.listbox.currentIndex().row() < self.listbox.__len__()-1:
+                    self.listbox.setCurrentRow(self.listbox.currentIndex().row()+1)
+                    file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+                    content = QMediaContent(file)
+                    self.player.setMedia(content)
+                    self.player.play()
 
 
 
