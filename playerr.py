@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import *
 # библиотека для работы с регулярными выражениями
 import re
+import time
 
 # Этот класс будет хранить в себе имя файла и полное имя файла с путём
 class plItem(object):
@@ -47,6 +48,7 @@ class MediaPlayer(QMainWindow):
         self.prevBtn.setIcon(prevIcon)
         # Размещаем кнопку на макете (лайоуте)
         self.mainGridLayout.addWidget(self.prevBtn, 3, 0)
+        self.prevBtn.clicked.connect(self.PreviousTrack)
               
         # Кнопка play
         self.playBtn = QPushButton('', self)
@@ -151,6 +153,22 @@ class MediaPlayer(QMainWindow):
             pos = self.player.position() / (self.player.duration() / 100)
             self.TimeLine.setValue(pos.__int__())
 
+    def PreviousTrack(self):
+        if self.listbox.selectedItems() and (self.listbox.currentRow() != 0):
+            self.listbox.setCurrentRow(self.listbox.currentIndex().row() - 1)
+            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+            content = QMediaContent(file)
+            self.player.setMedia(content)
+            self.player.setVolume(self.Volume.value())
+            self.player.play()
+        elif self.listbox.selectedItems() and (self.listbox.currentRow() == 0):
+            self.listbox.setCurrentRow(self.listbox.__len__() - 1)
+            file = QUrl.fromLocalFile(self.playList[self.listbox.currentIndex().row()].fPath)
+            content = QMediaContent(file)
+            self.player.setMedia(content)
+            self.player.setVolume(self.Volume.value())
+            self.player.play()
+
     def changeVolume(self, value):
         self.player.setVolume(value)
 
@@ -196,4 +214,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = MediaPlayer()
     ex.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
