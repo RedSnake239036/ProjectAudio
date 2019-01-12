@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (QMainWindow, QGridLayout, QTextEdit,
-                             QAction, QFileDialog, QApplication, QPushButton, QSlider, QWidget, QListWidget)
+                             QAction, QFileDialog, QApplication, QPushButton, QSlider, QWidget, QListWidget, QCheckBox)
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import *
 from PyQt5.QtMultimedia import *
@@ -88,12 +88,20 @@ class MediaPlayer(QMainWindow):
         self.listbox.doubleClicked.connect(self.PlayMusic)
         # Добавляем наш листбокс в макет  addWidget(ОБЪЕКТ, СТРОКА, СТОЛБЕЦ,  в высоту, в ширину )
         self.mainGridLayout.addWidget(self.listbox, 0, 0, 1, 0)
+        self.LoopCheckbox = QCheckBox('Зациклить', self)
+        self.mainGridLayout.addWidget(self.LoopCheckbox, 1, 2)
+        self.LoopCheckbox.stateChanged.connect(self.CheckboxState)
         # Создаем список в котором будут хранится имена и пути файлов в список будем добавлять объекты типа plItem
         self.playList = []
         # Признак зацикленности плейлиста и флаг изменения состояния плеера
         self.loop = True
         self.IgnoreStateChange = False
 
+    def CheckboxState(self, state):
+        if state == Qt.Checked:
+            self.IgnoreStateChange = True
+        else:
+            self.IgnoreStateChange = False
     # функционал таймера, кнопок и ползунков
     def addFile(self):
         # Получаем полное имя (с путём)
@@ -195,6 +203,8 @@ class MediaPlayer(QMainWindow):
                     content = QMediaContent(file)
                     self.player.setMedia(content)
                     self.player.play()
+        if self.IgnoreStateChange:
+            self.player.play()
 
 
 
